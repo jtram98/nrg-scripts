@@ -38,7 +38,7 @@ s.login(email_from, email_pass)
 
 
 #file to store balance
-bal_file = open(bal_file_loc, "r+")
+bal_file = open(bal_file_loc, "w+")
 log_file = open(log_file_loc, "a+")
 
 #prev bal
