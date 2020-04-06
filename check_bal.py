@@ -9,7 +9,6 @@ from os import environ
 #read config
 config = configparser.ConfigParser()   
 config.read((environ.get('NRG_INI_PATH')+'config.ini'))
-print ("addr:*"+environ.get('NRG_ADDR')+"*")
 
 #set up vars
 base_url = config['API']['BASE_URL']
@@ -38,11 +37,16 @@ s.login(email_from, email_pass)
 
 
 #file to store balance
-bal_file = open(bal_file_loc, "w+")
+try:
+    bal_file = open(bal_file_loc, "r+")
+except FileNotFoundError:
+    bal_file = open(bal_file_loc, "w+")
+
 log_file = open(log_file_loc, "a+")
 
 #prev bal
 prev_bal = float(bal_file.read() or 0)
+print (str(prev_bal))
 
 #get balance response
 response = requests.get(base_url+get_bal+wallet_addr)
@@ -52,7 +56,7 @@ status = float(response.json()["status"])
 
 #curent balance
 cur_bal = float((response.json()["result"] or 0)) / 10**18
-
+print (str(cur_bal))
 #bad status, set msg_content with json response
 if (status == 0):
     msg.set_content("Bad status returned. Please see json response: \n" + str(response.json()))
