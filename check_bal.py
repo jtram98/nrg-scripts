@@ -56,14 +56,14 @@ cur_bal = float((response.json()["result"] or 0)) / 10**18
 #bad status, set msg_content with json response
 if (status == 0):
     msg.set_content("Bad status returned. Please see json response: \n" + str(response.json()))
-    log_file.write("Error occured, bad status returned: " + str(response.json)+"\n")
+    log_file.write(str(datetime.datetime.now()) + ": Error occured, bad status returned: " + str(response.json)+"\n")
 #save response
 else:
     #check if cur_bal has increased from last check
     if (cur_bal > prev_bal):
         #set email content
         msg.set_content("New balance increased ... " + str(cur_bal) + " > " + str(prev_bal))
-        log_file.write("New balance increased ... " + str(cur_bal) + " > " + str(prev_bal) + "\n")
+        log_file.write(str(datetime.datetime.now()) + ": New balance increased ... " + str(cur_bal) + " > " + str(prev_bal) + "\n")
         
         #overwrite prev_bal with cur_bal
         bal_file.seek(0)
