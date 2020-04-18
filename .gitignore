@@ -131,3 +131,6 @@ dmypy.json
 #log, txt files
 bal.txt
 log.txt
+
+#.gitignore
+.gitignore
