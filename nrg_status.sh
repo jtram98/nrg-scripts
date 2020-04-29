@@ -1,17 +1,24 @@
 #!/bin/bash
 
-export PATH=$PATH:$HOME/energi3/bin
+#export PATH=$PATH:$HOME/energi3/bin
 
 #isRunning=$(energi3 --exec "masternode.masternodeInfo('MyAddress')" attach 2>/dev/null | grep -Fq "isActive: true" && echo $?)
 
-isStaking=$(energi3 --exec "miner.stakingStatus()" attach 2>/dev/null | grep -Fq "staking: true" && echo $?)
+isStaking=$(/home/nrgstaker/energi3/bin/energi3 --exec "miner.stakingStatus()" attach 2>/dev/null | grep -Fq "staking: true" && echo $?)
+
+msg="not running"
 
 if [[ $isRunning == 0 && $isStaking == 0 ]]; then
-        echo "running and staking"
+        msg="running and staking"
 elif [[ $isStaking == 0 ]]; then
-    echo "staking but masternode not active"
-        #send notification
-else
-        echo "not running"
-        #send notification
+    msg="staking but masternode not active"
 fi
+
+#send notification
+echo $msg
+email_data='{"personalizations": [{"to": [{"email": "jtram98@gmail.com"}]}],"from": {"email": "john.tram@outlook.com"},"subject": "NRG Staking Status","content": [{"type": "text/plain", "value":"'${msg}'"}]}'
+curl --request POST \
+    --url https://api.sendgrid.com/v3/mail/send \
+    --header "Authorization: Bearer $SENDGRID_API_KEY" \
+    --header 'Content-Type: application/json' \
+    --data "$email_data"
