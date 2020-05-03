@@ -105,7 +105,6 @@ def check_bal(nrg_vars):
 
             #send notification
             try:
-                print (msg_body)
                 notify(nrg_vars, "NRG Balance Update\n"+msg_body)
             except Exception as err:
                 logging.error(str(err))
