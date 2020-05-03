@@ -5,6 +5,15 @@ import configparser
 from os import environ
 from twilio.rest import Client
 import logging
+from enum import IntEnum
+
+#notify_type enum
+class Notification(IntEnum):
+    NONE = 0
+    EMAIL = 1
+    TEXT = 2
+    BOTH = 3
+
 
 #read config
 def get_config():
@@ -23,6 +32,8 @@ def get_vars(config):
         #files
         "bal_file_loc": config['LOGS']['BALANCE'],
         "app_log_loc": config['LOGS']['INFO'],
+        #notify type
+        "notify_type": config['NOTIFICATION']['NOTIFY_TYPE'],
         #twilio vars
         "twilio_sid": environ.get('TWILIO_SID'),
         "twilio_auth": environ.get('TWILIO_AUTH'),
@@ -32,7 +43,18 @@ def get_vars(config):
     return nrg_vars
 
 
-def send_text_msg(nrg_vars, msg):
+def notify(nrg_vars, msg):
+    if (int(nrg_vars.get('notify_type')) == int(Notification.TEXT)):
+        text_notification(nrg_vars,msg)
+    elif(int(nrg_vars.get('notify_type')) == int(Notification.EMAIL)):
+        #email
+        print("send email")
+    else:
+        #send both email and text
+        print("send both")
+
+
+def text_notification(nrg_vars, msg):
     client = Client(nrg_vars.get('twilio_sid'), nrg_vars.get('twilio_auth'))
 
     message = client.messages.create(
@@ -81,9 +103,10 @@ def check_bal(nrg_vars):
             bal_file.seek(0)
             bal_file.write(str(cur_bal))
 
-            #send text message
+            #send notification
             try:
-                send_text_msg(nrg_vars, "NRG Balance Update\n"+msg_body)
+                print (msg_body)
+                notify(nrg_vars, "NRG Balance Update\n"+msg_body)
             except Exception as err:
                 logging.error(str(err))
         else:
