@@ -133,3 +133,4 @@ bal.txt
 log.txt
 app.log
 private_env.sh
+*.save
