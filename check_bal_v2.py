@@ -42,7 +42,6 @@ def get_vars(config):
     }
     return nrg_vars
 
-
 def notify(nrg_vars, msg):
     if (int(nrg_vars.get('notify_type')) == int(Notification.TEXT)):
         text_notification(nrg_vars,msg)
@@ -57,7 +56,7 @@ def notify(nrg_vars, msg):
 def text_notification(nrg_vars, msg):
     client = Client(nrg_vars.get('twilio_sid'), nrg_vars.get('twilio_auth'))
 
-    message = client.messages.create(
+    client.messages.create(
          body = msg,
          from_ = nrg_vars.get('twilio_from'),
          to = nrg_vars.get('twilio_to')
