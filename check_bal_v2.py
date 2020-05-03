@@ -5,7 +5,17 @@ import configparser
 from os import environ
 from twilio.rest import Client
 import logging
+from enum import IntEnum
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
+#notify_type enum
+class Notification(IntEnum):
+    NONE = 0
+    EMAIL = 1
+    TEXT = 2
+    BOTH = 3
+    
 #read config
 def get_config():
     config = configparser.ConfigParser()
@@ -23,24 +33,53 @@ def get_vars(config):
         #files
         "bal_file_loc": config['LOGS']['BALANCE'],
         "app_log_loc": config['LOGS']['INFO'],
+        #notify type
+        "notify_type": config['NOTIFICATION']['NOTIFY_TYPE'],
         #twilio vars
         "twilio_sid": environ.get('TWILIO_SID'),
         "twilio_auth": environ.get('TWILIO_AUTH'),
         "twilio_from": environ.get('TWILIO_FROM'),
-        "twilio_to": environ.get('TWILIO_TO')
+        "twilio_to": environ.get('TWILIO_TO'),
+        #sendgrid vars
+        "sendgrid_api_key": environ.get('SENDGRID_API_KEY'),
+        "sendgrid_to": environ.get('SENDGRID_TO'),
+        "sendgrid_from": environ.get('SENDGRID_FROM')
     }
     return nrg_vars
 
+def notify(nrg_vars, msg):
+    if (int(nrg_vars.get('notify_type')) == int(Notification.TEXT)):
+        text_notification(nrg_vars,msg)
+    elif(int(nrg_vars.get('notify_type')) == int(Notification.EMAIL)):
+        #email
+        email_notification(nrg_vars, msg)
+    else:
+        #send both email and text
+        print("send both")
 
-def send_text_msg(nrg_vars, msg):
+
+def text_notification(nrg_vars, msg):
     client = Client(nrg_vars.get('twilio_sid'), nrg_vars.get('twilio_auth'))
 
-    message = client.messages.create(
+    client.messages.create(
          body = msg,
          from_ = nrg_vars.get('twilio_from'),
          to = nrg_vars.get('twilio_to')
      )
 
+def email_notification(nrg_vars, msg):
+    message = Mail(
+        from_email=nrg_vars.get('sendgrid_from'),
+        to_emails=nrg_vars.get('sendgrid_to'),
+        subject='NRG Balance Update',
+        html_content='<strong>'+msg+'</strong>'
+    )
+    try:
+        sg = SendGridAPIClient(nrg_vars.get('sendgrid_api_key'))
+        response = sg.send(message)
+    except Exception as e:
+        logging.error("Error occurred using SENDGRID: " + str(e))
+    
 def check_bal(nrg_vars): 
     #file to store balance
     try:
@@ -81,9 +120,9 @@ def check_bal(nrg_vars):
             bal_file.seek(0)
             bal_file.write(str(cur_bal))
 
-            #send text message
+            #send notification
             try:
-                send_text_msg(nrg_vars, "NRG Balance Update\n"+msg_body)
+                notify(nrg_vars, "NRG Balance Update\n"+msg_body)
             except Exception as err:
                 logging.error(str(err))
         else:
