@@ -9,6 +9,12 @@ from enum import IntEnum
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+#messages used in notifications
+common_text = "Previous Balance = {prev_bal} and New Balance = {cur_bal}, ${dol_val:0,.2f} USD (@{usd_xchng:0,.2f} /NRG)"
+no_chg_bal = "No change in balance from last check. " + common_text
+increase_bal = "New balance increased. " + common_text
+decrease_bal = "Current blance is less than previous balance. Pleae check the block explorer. " + common_text
+            
 #notify_type enum
 class Notification(IntEnum):
     NONE = 0
@@ -55,7 +61,6 @@ def notify(nrg_vars, msg):
     else:
         #send both email and text
         print("send both")
-
 
 def text_notification(nrg_vars, msg):
     client = Client(nrg_vars.get('twilio_sid'), nrg_vars.get('twilio_auth'))
@@ -108,14 +113,14 @@ def check_bal(nrg_vars):
         #check if cur_bal has increased from last check
         if (cur_bal == prev_bal):
             #no change
-            msg_body = "No change in balance from last check. Previous Balance = " + str(prev_bal) + " and New Balance = " + str(cur_bal) + ", ${:0,.2f}".format(cur_bal*usd_xchng) + " USD (@{:0,.2f}".format(usd_xchng) + "/NRG)"
+            msg_body = no_chg_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
             logging.info(msg_body)
         elif (cur_bal > prev_bal):
-            #set message content
-            msg_body = "New balance increased: Previous Balance = " + str(prev_bal) + ", New Balance = " + str(cur_bal) + ", ${:0,.2f}".format(cur_bal*usd_xchng) + " USD (@{:0,.2f}".format(usd_xchng) + "/NRG)"
+            #balance increased
+            msg_body = increase_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
             logging.info(">>> "+msg_body)
             
-            #overwrite prev_bal with cur_bal
+            #overwrite prev_bal with cur_bal in bal_file
             bal_file.seek(0)
             bal_file.write(str(cur_bal))
 
@@ -125,8 +130,8 @@ def check_bal(nrg_vars):
             except Exception as err:
                 logging.error(str(err))
         else:
-        #cur bal is less than previous balance, may indicate an issue with the NRG node/network
-            msg_body = "Current blance is less than previous balance. Pleae check the block explorer. Previous Balance = " + str(prev_bal) + " and New Balance = " + str(cur_bal) + ", ${:0,.2f}".format(cur_bal*usd_xchng) + " USD (@{:0,.2f}".format(usd_xchng) + "/NRG)"
+            #cur bal is less than previous balance, may indicate an issue with the NRG node/network
+            msg_body = decrease_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
             logging.info(msg_body)
 
     #file cleanup
