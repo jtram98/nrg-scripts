@@ -16,4 +16,4 @@ export SENDGRID_TO=<SENDGRID_TO>
 #for use on Windows Bash
 #export WSLENV=$GMAIL_PWD/w:$NRG_ADDR/w:$NRG_INI_PATH/wp:$TWILIO_SID/w:$TWILIO_SID/w:$TWILIO_FROM/w:$TWILIO_TO/w:
 #echo $WSLENV
-/path/to/python3.x /path/to/script/check_bal_v2.py
+/path/to/python3.x /path/to/script/check_nrg_bal.py
