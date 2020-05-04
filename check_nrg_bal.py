@@ -34,7 +34,7 @@ def get_vars(config):
         "bal_file_loc": config['LOGS']['BALANCE'],
         "app_log_loc": config['LOGS']['INFO'],
         #notify type
-        "notify_type": config['NOTIFICATION']['NOTIFY_TYPE'],
+        "notify_type": config.getint('NOTIFICATION','NOTIFY_TYPE'),
         #twilio vars
         "twilio_sid": environ.get('TWILIO_SID'),
         "twilio_auth": environ.get('TWILIO_AUTH'),
@@ -48,10 +48,9 @@ def get_vars(config):
     return nrg_vars
 
 def notify(nrg_vars, msg):
-    if (int(nrg_vars.get('notify_type')) == int(Notification.TEXT)):
+    if (nrg_vars.get('notify_type') == Notification.TEXT):
         text_notification(nrg_vars,msg)
-    elif(int(nrg_vars.get('notify_type')) == int(Notification.EMAIL)):
-        #email
+    elif(nrg_vars.get('notify_type') == Notification.EMAIL):
         email_notification(nrg_vars, msg)
     else:
         #send both email and text
