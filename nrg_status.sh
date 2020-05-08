@@ -1,5 +1,6 @@
 #!/bin/bash
-
+#original Author: @ProjectJourneyman
+#updated to use send grid
 #export PATH=$PATH:$HOME/energi3/bin
 
 #isRunning=$(energi3 --exec "masternode.masternodeInfo('MyAddress')" attach 2>/dev/null | grep -Fq "isActive: true" && echo $?)
@@ -16,8 +17,8 @@ fi
 
 #send notification
 echo $msg
-email_data='{"personalizations": [{"to": [{"email": "jtram98@gmail.com"}]}],"from": {"email": "john.tram@outlook.com"},"subject": "NRG Staking Status","content": [{"type": "text/plain", "value":"'${msg}'"}]}'
-curl --request POST \
+email_data='{"personalizations": [{"to": [{"email": "email_addr"}]}],"from": {"email": "email_addr"},"subject": "NRG Staking Status","content": [{"type": "text/plain", "value":"'${msg}'"}]}'
+curl --request POST a
     --url https://api.sendgrid.com/v3/mail/send \
     --header "Authorization: Bearer $SENDGRID_API_KEY" \
     --header 'Content-Type: application/json' \
