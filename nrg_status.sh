@@ -1,10 +1,16 @@
-#!/bin/bash
+#!/bin/bash -l
+export PATH=$PATH:$HOME/energi3/bin
+#original Author: @ProjectJourneyman
 
-#export PATH=$PATH:$HOME/energi3/bin
+#updated to use sendgrid
+#the following env variables defined:
+#   SENDGRID_API_KEY
+#   TO_EMAIL_ADDR
+#   FROM_EMAIL_ADDR 
 
 #isRunning=$(energi3 --exec "masternode.masternodeInfo('MyAddress')" attach 2>/dev/null | grep -Fq "isActive: true" && echo $?)
 
-isStaking=$(/home/nrgstaker/energi3/bin/energi3 --exec "miner.stakingStatus()" attach 2>/dev/null | grep -Fq "staking: true" && echo $?)
+isStaking=$(energi3 --exec "miner.stakingStatus()" attach 2>/dev/null | grep -Fq "staking: true" && echo $?)
 
 msg="not running"
 
@@ -14,9 +20,10 @@ elif [[ $isStaking == 0 ]]; then
     msg="staking but masternode not active"
 fi
 
-#send notification
 echo $msg
-email_data='{"personalizations": [{"to": [{"email": "jtram98@gmail.com"}]}],"from": {"email": "john.tram@outlook.com"},"subject": "NRG Staking Status","content": [{"type": "text/plain", "value":"'${msg}'"}]}'
+#send notification
+email_data='{"personalizations": [{"to": [{"email": "'${TO_EMAIL_ADDR}'"}]}],"from": {"email": "'${FROM_EMAIL_ADDR}'"},"subject": "NRG Staking Status","content": [{"type": "text/plain", "value":"'${msg}'"}]}'
+
 curl --request POST \
     --url https://api.sendgrid.com/v3/mail/send \
     --header "Authorization: Bearer $SENDGRID_API_KEY" \
