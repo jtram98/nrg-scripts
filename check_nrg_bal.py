@@ -61,7 +61,9 @@ def notify(nrg_vars, msg):
         email_notification(nrg_vars, msg)
     else:
         #send both email and text
-        print("send both")
+        text_notification(nrg_vars,msg)
+        email_notification(nrg_vars,msg)
+        
 
 def text_notification(nrg_vars, msg):
     client = Client(nrg_vars.get('twilio_sid'), nrg_vars.get('twilio_auth'))
