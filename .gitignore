@@ -136,3 +136,4 @@ private_env.sh
 *.save
 .gitpod*
 settings.json
+bug.fix.txt

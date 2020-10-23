@@ -8,9 +8,10 @@ import logging
 from enum import IntEnum
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+import numpy as np
 
 #messages used in notifications
-common_text = "Previous Balance = {prev_bal} and New Balance = {cur_bal}, ${dol_val:0,.2f} USD (@{usd_xchng:0,.2f} /NRG)"
+common_text = "Previous Balance = {prev_bal:0,.2f} and New Balance = {cur_bal:0,.2f}, ${dol_val:0,.2f} USD (@{usd_xchng:0,.2f} /NRG)"
 no_chg_bal = "No change in balance from last check. " + common_text
 increase_bal = "New balance increased. " + common_text
 decrease_bal = "Current blance is less than previous balance. Pleae check the block explorer. " + common_text
@@ -92,8 +93,8 @@ def check_bal(nrg_vars):
         bal_file = open(nrg_vars.get("bal_file_loc"), "w+")
 
     #prev bal
-    prev_bal = float(bal_file.read() or 0)
-
+    #round up 2 decimal places
+    prev_bal = np.round(float(bal_file.read() or 0),2)
     #get balance response & status
     response = requests.get(nrg_vars.get("base_url") + nrg_vars.get("get_bal") + nrg_vars.get("wallet_addr"))
     status = float(response.json()["status"])
@@ -103,7 +104,8 @@ def check_bal(nrg_vars):
     usd_xchng = float(usd_response.json()["result"]["ethusd"] or 0)
 
     #curent balance
-    cur_bal = float((response.json()["result"] or 0)) / 10**18
+    #round up 2 decimals
+    cur_bal = np.round(float((response.json()["result"] or 0)) / 10**18,2)
 
     #bad status, set msg_content with json response
     if (status == 0):
@@ -111,11 +113,11 @@ def check_bal(nrg_vars):
     #save response
     else:
         #check if cur_bal has increased from last check
-        if (cur_bal == prev_bal):
+        if (np.round(cur_bal,2) == prev_bal):
             #no change
             msg_body = no_chg_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
             logging.info(msg_body)
-        elif (cur_bal > prev_bal):
+        elif (np.round(cur_bal,2) > prev_bal,2):
             #balance increased
             msg_body = increase_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
             logging.info(">>> "+msg_body)
