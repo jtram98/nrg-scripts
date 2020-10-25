@@ -61,7 +61,8 @@ def notify(nrg_vars, msg):
         email_notification(nrg_vars, msg)
     else:
         #send both email and text
-        print("send both")
+        text_notification(nrg_vars,msg)
+        email_notification(nrg_vars,msg)
 
 def text_notification(nrg_vars, msg):
     client = Client(nrg_vars.get('twilio_sid'), nrg_vars.get('twilio_auth'))
@@ -81,7 +82,7 @@ def email_notification(nrg_vars, msg):
     )
     try:
         sg = SendGridAPIClient(nrg_vars.get('sendgrid_api_key'))
-        response = sg.send(message)
+        sg.send(message)
     except Exception as e:
         logging.error("Error occurred using SENDGRID: " + str(e))
     
@@ -94,7 +95,8 @@ def check_bal(nrg_vars):
 
     #prev bal
     #round up 2 decimal places
-    prev_bal = np.round(float(bal_file.read() or 0),2)
+    prev_bal = (float(bal_file.read() or 0))
+
     #get balance response & status
     response = requests.get(nrg_vars.get("base_url") + nrg_vars.get("get_bal") + nrg_vars.get("wallet_addr"))
     status = float(response.json()["status"])
@@ -113,11 +115,11 @@ def check_bal(nrg_vars):
     #save response
     else:
         #check if cur_bal has increased from last check
-        if (np.round(cur_bal,2) == prev_bal):
+        if (cur_bal == prev_bal):
             #no change
             msg_body = no_chg_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
             logging.info(msg_body)
-        elif (np.round(cur_bal,2) > prev_bal,2):
+        elif (cur_bal > prev_bal):
             #balance increased
             msg_body = increase_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
             logging.info(">>> "+msg_body)
