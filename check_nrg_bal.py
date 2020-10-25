@@ -108,8 +108,6 @@ def check_bal(nrg_vars):
     #curent balance
     #round up 2 decimals
     cur_bal = np.round(float((response.json()["result"] or 0)) / 10**18,2)
-    print ("prev bal: "+str(prev_bal))
-    print ("cur_bal: "+str(cur_bal))
 
     #bad status, set msg_content with json response
     if (status == 0):
