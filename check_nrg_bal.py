@@ -8,7 +8,6 @@ import logging
 from enum import IntEnum
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-import numpy as np
 
 #messages used in notifications
 common_text = "Previous Balance = {prev_bal:0,.2f} and New Balance = {cur_bal:0,.2f}, ${dol_val:0,.2f} USD (@{usd_xchng:0,.2f} /NRG)"
@@ -94,8 +93,7 @@ def check_bal(nrg_vars):
         bal_file = open(nrg_vars.get("bal_file_loc"), "w+")
 
     #prev bal
-    #round up 2 decimal places
-    prev_bal = (float(bal_file.read() or 0))
+    prev_bal = round(float(bal_file.read() or 0),2)
 
     #get balance response & status
     response = requests.get(nrg_vars.get("base_url") + nrg_vars.get("get_bal") + nrg_vars.get("wallet_addr"))
@@ -107,7 +105,7 @@ def check_bal(nrg_vars):
 
     #curent balance
     #round up 2 decimals
-    cur_bal = np.round(float((response.json()["result"] or 0)) / 10**18,2)
+    cur_bal = round(float((response.json()["result"] or 0)) / 10**18,2)
 
     #bad status, set msg_content with json response
     if (status == 0):
@@ -126,7 +124,7 @@ def check_bal(nrg_vars):
             
             #overwrite prev_bal with cur_bal in bal_file
             bal_file.seek(0)
-            bal_file.write(str(cur_bal))
+            bal_file.write('{0:.2f}'.format(cur_bal))
 
             #send notification
             try:
