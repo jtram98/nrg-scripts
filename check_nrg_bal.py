@@ -20,7 +20,8 @@ class Notification(IntEnum):
     NONE = 0
     EMAIL = 1
     TEXT = 2
-    BOTH = 3
+    ALEXA = 3
+    ALL = 4
     
 #read config
 def get_config():
@@ -49,7 +50,9 @@ def get_vars(config):
         #sendgrid vars
         "sendgrid_api_key": environ.get('SENDGRID_API_KEY'),
         "sendgrid_to": environ.get('SENDGRID_TO'),
-        "sendgrid_from": environ.get('SENDGRID_FROM')
+        "sendgrid_from": environ.get('SENDGRID_FROM'),
+        #alexa
+        "alexa_api_key": environ.get('ALEXA_API_KEY')
     }
     return nrg_vars
 
@@ -58,10 +61,13 @@ def notify(nrg_vars, msg):
         text_notification(nrg_vars,msg)
     elif(nrg_vars.get('notify_type') == Notification.EMAIL):
         email_notification(nrg_vars, msg)
+    elif(nrg_vars.get('notify_type') == Notification.ALEXA):
+        alexa_notification(nrg_vars, msg)
     else:
-        #send both email and text
+        #send to all notification types
         text_notification(nrg_vars,msg)
         email_notification(nrg_vars,msg)
+        alexa_notification(nrg_vars, msg)
 
 def text_notification(nrg_vars, msg):
     client = Client(nrg_vars.get('twilio_sid'), nrg_vars.get('twilio_auth'))
@@ -85,6 +91,15 @@ def email_notification(nrg_vars, msg):
     except Exception as e:
         logging.error("Error occurred using SENDGRID: " + str(e))
     
+def alexa_notification(nrg_vars, msg):
+    body = json.dumps({
+        "notification": msg,
+        "accessCode": nrg_vars.get('alexa_api_key')
+        })
+    resp = requests.post(url = "https://api.notifymyecho.com/v1/NotifyMe", data = body)
+    logging.info(str(resp.text))
+
+
 def check_bal(nrg_vars): 
     #file to store balance
     try:
