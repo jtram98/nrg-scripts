@@ -138,3 +138,4 @@ private_env.sh
 settings.json
 bug.fix.txt
 test.py
+Local Postgres.session.sql
