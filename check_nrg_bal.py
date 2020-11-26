@@ -8,6 +8,7 @@ import logging
 from enum import IntEnum
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from  text_notification import TextNotification
 
 #messages used in notifications
 common_text = "Previous Balance = {prev_bal:0,.2f} and New Balance = {cur_bal:0,.2f}, ${dol_val:0,.2f} USD (@{usd_xchng:0,.2f} /NRG)"
@@ -58,7 +59,8 @@ def get_vars(config):
 
 def notify(nrg_vars, msg):
     if (nrg_vars.get('notify_type') == Notification.TEXT):
-        text_notification(nrg_vars,msg)
+        text = TextNotification()
+        text.notify(nrg_vars.get('twilio_sid'),  nrg_vars.get('twilio_auth'),  nrg_vars.get('twilio_to'),  nrg_vars.get('twilio_from'), msg)
     elif(nrg_vars.get('notify_type') == Notification.EMAIL):
         email_notification(nrg_vars, msg)
     elif(nrg_vars.get('notify_type') == Notification.ALEXA):
