@@ -8,6 +8,7 @@ import logging
 from enum import IntEnum
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from subprocess import check_output
 
 #messages used in notifications
 common_text = "Previous Balance = {prev_bal:0,.2f} and New Balance = {cur_bal:0,.2f}, ${dol_val:0,.2f} USD (@{usd_xchng:0,.2f} /NRG)"
@@ -120,7 +121,12 @@ def check_bal(nrg_vars):
 
     #curent balance
     #round up 2 decimals
-    cur_bal = round(float((response.json()["result"] or 0)) / 10**18,2)
+    #calling node.js script that uses web3 modules to access blockchain info
+    cur_bal = check_output(['node', 'nrg_bal.js'])
+    cur_bal = round(float((cur_bal.decode('utf-8')) or 0),2)
+
+    #energi expolorer having issues
+    #cur_bal = round(float((response.json()["result"] or 0)) / 10**18,2)
 
     #bad status, set msg_content with json response
     if (status == 0):
