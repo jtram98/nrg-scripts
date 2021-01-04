@@ -137,3 +137,7 @@ private_env.sh
 .gitpod*
 settings.json
 bug.fix.txt
+Local Postgres.session.sql
+test.py
+node_modules
+package-lock.json

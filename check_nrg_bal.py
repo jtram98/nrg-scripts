@@ -8,6 +8,7 @@ import logging
 from enum import IntEnum
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from subprocess import check_output
 
 #messages used in notifications
 common_text = "Previous Balance = {prev_bal:0,.2f} and New Balance = {cur_bal:0,.2f}, ${dol_val:0,.2f} USD (@{usd_xchng:0,.2f} /NRG)"
@@ -20,7 +21,8 @@ class Notification(IntEnum):
     NONE = 0
     EMAIL = 1
     TEXT = 2
-    BOTH = 3
+    ALEXA = 3
+    ALL = 4
     
 #read config
 def get_config():
@@ -49,7 +51,9 @@ def get_vars(config):
         #sendgrid vars
         "sendgrid_api_key": environ.get('SENDGRID_API_KEY'),
         "sendgrid_to": environ.get('SENDGRID_TO'),
-        "sendgrid_from": environ.get('SENDGRID_FROM')
+        "sendgrid_from": environ.get('SENDGRID_FROM'),
+        #alexa
+        "alexa_api_key": environ.get('ALEXA_API_KEY')
     }
     return nrg_vars
 
@@ -58,10 +62,13 @@ def notify(nrg_vars, msg):
         text_notification(nrg_vars,msg)
     elif(nrg_vars.get('notify_type') == Notification.EMAIL):
         email_notification(nrg_vars, msg)
+    elif(nrg_vars.get('notify_type') == Notification.ALEXA):
+        alexa_notification(nrg_vars, msg)
     else:
-        #send both email and text
+        #send to all notification types
         text_notification(nrg_vars,msg)
         email_notification(nrg_vars,msg)
+        alexa_notification(nrg_vars, msg)
 
 def text_notification(nrg_vars, msg):
     client = Client(nrg_vars.get('twilio_sid'), nrg_vars.get('twilio_auth'))
@@ -85,6 +92,15 @@ def email_notification(nrg_vars, msg):
     except Exception as e:
         logging.error("Error occurred using SENDGRID: " + str(e))
     
+def alexa_notification(nrg_vars, msg):
+    body = json.dumps({
+        "notification": msg,
+        "accessCode": nrg_vars.get('alexa_api_key')
+        })
+    resp = requests.post(url = "https://api.notifymyecho.com/v1/NotifyMe", data = body)
+    logging.info(str(resp.text))
+
+
 def check_bal(nrg_vars): 
     #file to store balance
     try:
@@ -105,7 +121,12 @@ def check_bal(nrg_vars):
 
     #curent balance
     #round up 2 decimals
-    cur_bal = round(float((response.json()["result"] or 0)) / 10**18,2)
+    #calling node.js script that uses web3 modules to access blockchain info
+    cur_bal = check_output(['node', 'nrg_bal.js'])
+    cur_bal = round(float((cur_bal.decode('utf-8')) or 0),2)
+
+    #energi expolorer having issues
+    #cur_bal = round(float((response.json()["result"] or 0)) / 10**18,2)
 
     #bad status, set msg_content with json response
     if (status == 0):
