@@ -117,7 +117,7 @@ def check_bal(nrg_vars):
 
     #get USD value & status
     usd_response = requests.get(nrg_vars.get("base_url") + nrg_vars.get("get_usd"))
-    usd_xchng = float(usd_response.json()["result"]["ethusd"] or 0)
+    usd_xchng = float(usd_response.json()["result"]["coin_usd"] or 0)
 
     #curent balance
     #round up 2 decimals
