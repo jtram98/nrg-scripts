@@ -11,7 +11,7 @@ from sendgrid.helpers.mail import Mail
 from  text_notification import TextNotification
 
 #messages used in notifications
-common_text = "Previous Balance = {prev_bal:0,.2f} and New Balance = {cur_bal:0,.2f}, ${dol_val:0,.2f} USD (@{usd_xchng:0,.2f} /NRG)"
+common_text = "Previous Balance = {prev_bal:0,.2f} and New Balance = {cur_bal:0,.2f}, ${dol_val:0,.2f} USD (@{usd_xchng:0,.2f}/NRG)"
 no_chg_bal = "No change in balance from last check. " + common_text
 increase_bal = "New balance increased. " + common_text
 decrease_bal = "Current blance is less than previous balance. Pleae check the block explorer. " + common_text
@@ -114,11 +114,14 @@ def check_bal(nrg_vars):
 
     #get balance response & status
     response = requests.get(nrg_vars.get("base_url") + nrg_vars.get("get_bal") + nrg_vars.get("wallet_addr"))
+    print(response.json())
     status = float(response.json()["status"])
 
     #get USD value & status
     usd_response = requests.get(nrg_vars.get("base_url") + nrg_vars.get("get_usd"))
-    usd_xchng = float(usd_response.json()["result"]["ethusd"] or 0)
+    print (f"USD Response: {nrg_vars.get('base_url') + nrg_vars.get('get_usd')}")
+    print(usd_response)
+    coin_usd = float(usd_response.json()["result"]["coin_usd"] or 0)
 
     #curent balance
     #round up 2 decimals
@@ -132,11 +135,11 @@ def check_bal(nrg_vars):
         #check if cur_bal has increased from last check
         if (cur_bal == prev_bal):
             #no change
-            msg_body = no_chg_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
+            msg_body = no_chg_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*coin_usd), usd_xchng=coin_usd)
             logging.info(msg_body)
         elif (cur_bal > prev_bal):
             #balance increased
-            msg_body = increase_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
+            msg_body = increase_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*coin_usd), usd_xchng=coin_usd)
             logging.info(">>> "+msg_body)
             
             #overwrite prev_bal with cur_bal in bal_file
@@ -150,7 +153,7 @@ def check_bal(nrg_vars):
                 logging.error(str(err))
         else:
             #cur bal is less than previous balance, may indicate an issue with the NRG node/network
-            msg_body = decrease_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*usd_xchng), usd_xchng=usd_xchng)
+            msg_body = decrease_bal.format(prev_bal=prev_bal, cur_bal=cur_bal, dol_val=(cur_bal*coin_usd), usd_xchng=coin_usd)
             logging.info(msg_body)
 
     #file cleanup
