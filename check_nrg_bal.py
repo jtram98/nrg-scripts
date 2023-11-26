@@ -114,6 +114,7 @@ def check_bal(nrg_vars):
 
     #get balance response & status
     response = requests.get(nrg_vars.get("base_url") + nrg_vars.get("get_bal") + nrg_vars.get("wallet_addr"))
+    print(nrg_vars.get("base_url") + nrg_vars.get("get_bal") + nrg_vars.get("wallet_addr"))
     print(response.json())
     status = float(response.json()["status"])
 
