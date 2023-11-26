@@ -105,6 +105,7 @@ celerybeat.pid
 .env
 .venv
 env/
+env3.12/
 venv/
 ENV/
 env.bak/
@@ -133,6 +134,7 @@ bal.txt
 log.txt
 app.log
 private_env.sh
+.env
 *.save
 .gitpod*
 settings.json
