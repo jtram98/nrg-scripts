@@ -49,7 +49,7 @@ def handle_balance_change(prev_bal, cur_bal, coin_usd, bal_file):
 
         #send notification
         try:
-            notify(environ.get('NOTIFY_TYPE'), "NRG Balance Updatee<br/><br/>"+msg_body)
+            notify(environ.get('NOTIFY_TYPE'), "NRG Balance Update<br/><br/>"+msg_body)
         except Exception as err:
             logger.error(str(err))
 

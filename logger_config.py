@@ -6,11 +6,11 @@ load_dotenv()
 
 def setup_logging():
    
-    logger = logging.getLogger('nrg_logger')
-    logger.setLevel(logging.DEBUG)  
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)  
     
     fh = logging.FileHandler(environ.get("LOG_FILE"))
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.INFO)
     
     ch = logging.StreamHandler()
     ch.setLevel(logging.ERROR)

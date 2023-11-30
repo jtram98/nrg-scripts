@@ -142,3 +142,4 @@ settings.json
 bug.fix.txt
 test.py
 Local Postgres.session.sql
+launch.json
