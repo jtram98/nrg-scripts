@@ -140,6 +140,7 @@ private_env.sh
 .gitpod*
 settings.json
 bug.fix.txt
-test.py
 Local Postgres.session.sql
-launch.json
+test.py
+node_modules
+package-lock.json
